@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Prediction Interface</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        #results-table {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .container { 
+            display: flex; 
+            width: 100%; 
+        }
+        .input-section, .output-section { 
+            padding: 20px; 
+            width: 50%; 
+            box-sizing: border-box; 
+        }
+        .input-section { 
+            background-color: #f9f9f9; 
+        }
+        .output-section { 
+            background-color: #ffffff; 
+            overflow-y: auto; 
+        }
+        .input-field { 
+            margin-bottom: 10px; 
+        }
+        .input-field label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold;
+        }
+        .input-field input, .input-field select { 
+            width: 100%; 
+            padding: 8px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+        }
+        .button { 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            border-radius: 4px; 
+            border: none; 
+        }
+        .predict-button { 
+            background-color: #4CAF50; 
+            color: white; 
+        }
+        .city-button { 
+            background-color: #2196F3; 
+            color: white; 
+        }
+        #prediction-output { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h2>Input Data</h2>
+
+            <!-- Выбор страны и города -->
+            <div class="input-field">
+                <label for="country">Country:</label>
+                <select id="country" onchange="updateCities()">
+                    <option value="">Select Country</option>
+                    <option value="USA">USA</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Kazakhstan">Kazakhstan</option>
+                    <!-- Добавьте другие страны по необходимости -->
+                </select>
+            </div>
+            <div class="input-field">
+                <label for="city">City:</label>
+                <select id="city" onchange="autoFillData()">
+                    <option value="">Select City</option>
+                </select>
+            </div>
+
+            <!-- Поля для ввода данных -->
+            <!-- Поля для ввода данных -->
+<form id="input-form">
+    <div class="input-field">
+        <label for="assaultPerPop">Assault Per Population:</label>
+        <input type="number" step="0.01" id="assaultPerPop" name="assaultPerPop" required>
+    </div>
+    <div class="input-field">
+        <label for="rapes">Rapes:</label>
+        <input type="number" id="rapes" name="rapes" required>
+    </div>
+    <div class="input-field">
+        <label for="robbbPerPop">Robberies Per Population:</label>
+        <input type="number" step="0.01" id="robbbPerPop" name="robbbPerPop" required>
+    </div>
+    <div class="input-field">
+        <label for="rapesPerPop">Rapes Per Population:</label>
+        <input type="number" step="0.01" id="rapesPerPop" name="rapesPerPop" required>
+    </div>
+    <div class="input-field">
+        <label for="PctKidsBornNeverMar">Percent Kids Born Never Married:</label>
+        <input type="number" step="0.01" id="PctKidsBornNeverMar" name="PctKidsBornNeverMar" required>
+    </div>
+    <div class="input-field">
+        <label for="murdPerPop">Murders Per Population:</label>
+        <input type="number" step="0.01" id="murdPerPop" name="murdPerPop" required>
+    </div>
+    <div class="input-field">
+        <label for="NumKidsBornNeverMar">Number of Kids Born Never Married:</label>
+        <input type="number" id="NumKidsBornNeverMar" name="NumKidsBornNeverMar" required>
+    </div>
+    <div class="input-field">
+        <label for="OwnOccMedVal">Owner Occupied Median Value:</label>
+        <input type="number" id="OwnOccMedVal" name="OwnOccMedVal" required>
+    </div>
+    <div class="input-field">
+        <label for="MalePctNevMarr">Male Percent Never Married:</label>
+        <input type="number" step="0.01" id="MalePctNevMarr" name="MalePctNevMarr" required>
+    </div>
+    <div class="input-field">
+        <label for="HousVacant">Houses Vacant:</label>
+        <input type="number" step="0.01" id="HousVacant" name="HousVacant" required>
+    </div>
+    <div class="input-field">
+        <label for="racePctHisp">Race Percent Hispanic:</label>
+        <input type="number" step="0.01" id="racePctHisp" name="racePctHisp" required>
+    </div>
+    <div class="input-field">
+        <label for="PctFam2Par">Percent Families with Two Parents:</label>
+        <input type="number" step="0.01" id="PctFam2Par" name="PctFam2Par" required>
+    </div>
+    <div class="input-field">
+        <label for="PctPersOwnOccup">Percent Persons Owning Occupied Houses:</label>
+        <input type="number" step="0.01" id="PctPersOwnOccup" name="PctPersOwnOccup" required>
+    </div>
+    <div class="input-field">
+        <label for="larcPerPop">Larcenies Per Population:</label>
+        <input type="number" step="0.01" id="larcPerPop" name="larcPerPop" required>
+    </div>
+    <button type="button" class="button predict-button" onclick="predict()">Predict</button>
+</form>
+
+        </div>
+
+        <div class="output-section">
+            <h2>Prediction Results</h2>
+            <div id="prediction-output">
+                <!-- Predictions will be displayed here -->
+            </div>
+            <canvas id="chart" width="400" height="400"></canvas> <!-- Canvas for chart -->
+            <!-- Таблица для отображения данных -->
+            <table id="results-table" style="width:100%; margin-top:20px; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">City</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Prediction Violent Crimes Per Population</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Данные будут добавляться сюда -->
+                </tbody>
+            </table>
+        </div>
+             
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Данные для автозаполнения
+    const cityData = {
+    USA: {
+        "New York": { 
+            assaultPerPop: 10.4, rapes: 107, robbbPerPop: 105, rapesPerPop: 50,
+            PctKidsBornNeverMar: 103, murdPerPop: 49, NumKidsBornNeverMar: 80,
+            OwnOccMedVal: 39, MalePctNevMarr: 71, HousVacant: 5, racePctHisp: 43,
+            PctFam2Par: 67, PctPersOwnOccup: 113, larcPerPop: 71
+        },
+        "Los Angeles": {
+            assaultPerPop: 9.8, rapes: 90, robbbPerPop: 120, rapesPerPop: 45,
+            PctKidsBornNeverMar: 90, murdPerPop: 39, NumKidsBornNeverMar: 75,
+            OwnOccMedVal: 45, MalePctNevMarr: 65, HousVacant: 4, racePctHisp: 35,
+            PctFam2Par: 55, PctPersOwnOccup: 95, larcPerPop: 85
+        }
+    },
+    Canada: {
+        "Ottawa": { 
+        assaultPerPop: 2.4, 
+        rapes: 78, 
+        robbbPerPop: 1.2, 
+        rapesPerPop: 24,
+        PctKidsBornNeverMar: 60, 
+        murdPerPop: 0.5, 
+        NumKidsBornNeverMar: 50,
+        OwnOccMedVal: 42, 
+        MalePctNevMarr: 30, 
+        HousVacant: 3, 
+        racePctHisp: 10,
+        PctFam2Par: 75, 
+        PctPersOwnOccup: 65, 
+        larcPerPop: 18
+        },
+        "Toronto": {
+        assaultPerPop: 3.2, 
+        rapes: 91, 
+        robbbPerPop: 1.5, 
+        rapesPerPop: 31,
+        PctKidsBornNeverMar: 70, 
+        murdPerPop: 1.25, 
+        NumKidsBornNeverMar: 65,
+        OwnOccMedVal: 45, 
+        MalePctNevMarr: 40, 
+        HousVacant: 4, 
+        racePctHisp: 15,
+        PctFam2Par: 55, 
+        PctPersOwnOccup: 70, 
+        larcPerPop: 2.5
+        }
+    },
+    Kazakhstan: {
+        "Almaty": {
+            "assaultPerPop": 12.0, "rapes": 120, "robbbPerPop": 150, "rapesPerPop": 60,
+            "PctKidsBornNeverMar": 65, "murdPerPop": 40, "NumKidsBornNeverMar": 55,
+            "OwnOccMedVal": 50, "MalePctNevMarr": 65, "HousVacant": 5, "racePctHisp": 15,
+            "PctFam2Par": 75, "PctPersOwnOccup": 80, "larcPerPop": 75
+         },
+        "Shymkent": {
+        "assaultPerPop": 6.0, "rapes": 50, "robbbPerPop": 60, "rapesPerPop": 20,
+        "PctKidsBornNeverMar": 60, "murdPerPop": 20, "NumKidsBornNeverMar": 45,
+        "OwnOccMedVal": 55, "MalePctNevMarr": 50, "HousVacant": 3, "racePctHisp": 10,
+        "PctFam2Par": 85, "PctPersOwnOccup": 90, "larcPerPop": 40
+         },
+        "Astana": {
+        "assaultPerPop": 10.0, "rapes": 80, "robbbPerPop": 100, "rapesPerPop": 40,
+        "PctKidsBornNeverMar": 62, "murdPerPop": 30, "NumKidsBornNeverMar": 50,
+        "OwnOccMedVal": 60, "MalePctNevMarr": 60, "HousVacant": 4, "racePctHisp": 12,
+        "PctFam2Par": 78, "PctPersOwnOccup": 82, "larcPerPop": 65
+         },
+        "Aktobe": {
+        "assaultPerPop": 9.0, "rapes": 70, "robbbPerPop": 80, "rapesPerPop": 35,
+        "PctKidsBornNeverMar": 61, "murdPerPop": 28, "NumKidsBornNeverMar": 48,
+        "OwnOccMedVal": 45, "MalePctNevMarr": 55, "HousVacant": 4, "racePctHisp": 11,
+        "PctFam2Par": 80, "PctPersOwnOccup": 84, "larcPerPop": 60
+         },
+        "Karaganda": {
+        "assaultPerPop": 11.0, "rapes": 90, "robbbPerPop": 120, "rapesPerPop": 45,
+        "PctKidsBornNeverMar": 63, "murdPerPop": 35, "NumKidsBornNeverMar": 52,
+        "OwnOccMedVal": 52, "MalePctNevMarr": 62, "HousVacant": 6, "racePctHisp": 14,
+        "PctFam2Par": 77, "PctPersOwnOccup": 81, "larcPerPop": 70
+        },
+        "Atyrau": {
+        "assaultPerPop": 8.5, "rapes": 60, "robbbPerPop": 70, "rapesPerPop": 30,
+        "PctKidsBornNeverMar": 59, "murdPerPop": 25, "NumKidsBornNeverMar": 47,
+        "OwnOccMedVal": 53, "MalePctNevMarr": 58, "HousVacant": 3, "racePctHisp": 12,
+        "PctFam2Par": 82, "PctPersOwnOccup": 86, "larcPerPop": 55
+        },
+        "Aktau": {
+        "assaultPerPop": 7.5, "rapes": 50, "robbbPerPop": 65, "rapesPerPop": 25,
+        "PctKidsBornNeverMar": 58, "murdPerPop": 20, "NumKidsBornNeverMar": 44,
+        "OwnOccMedVal": 54, "MalePctNevMarr": 56, "HousVacant": 4, "racePctHisp": 10,
+        "PctFam2Par": 83, "PctPersOwnOccup": 87, "larcPerPop": 50
+        },
+        "Taraz": {
+        "assaultPerPop": 8.0, "rapes": 65, "robbbPerPop": 75, "rapesPerPop": 32,
+        "PctKidsBornNeverMar": 60, "murdPerPop": 25, "NumKidsBornNeverMar": 46,
+        "OwnOccMedVal": 50, "MalePctNevMarr": 58, "HousVacant": 4, "racePctHisp": 11,
+        "PctFam2Par": 81, "PctPersOwnOccup": 85, "larcPerPop": 58
+        }
+    }
+};
+
+
+
+    const cities = [];
+    const predictions = {};  // Хранит предсказания для каждого города
+    let chart;
+
+    function updateCities() {
+        const country = document.getElementById('country').value;
+        const citySelect = document.getElementById('city');
+        citySelect.innerHTML = '<option value="">Select City</option>';
+
+        if (cityData[country]) {
+            Object.keys(cityData[country]).forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+        }
+    }
+
+    function autoFillData() {
+        const country = document.getElementById('country').value;
+        const city = document.getElementById('city').value;
+
+        if (cityData[country] && cityData[country][city]) {
+            const data = cityData[country][city];
+            for (let key in data) {
+                if (document.getElementById(key)) {
+                    document.getElementById(key).value = data[key];
+                }
+            }
+        } else {
+            document.querySelectorAll('#input-form input').forEach(input => input.value = '');
+        }
+    }
+
+    function predict() {
+        const formData = new FormData(document.getElementById('input-form'));
+        const data = Object.fromEntries(formData);
+    
+        const cityName = document.getElementById('city').value || "Unknown City";
+        
+        fetch('http://127.0.0.1:5000/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            predictions[cityName] = result.prediction;
+            updateChart();
+            updateTable(cityName, result.prediction);
+            document.getElementById('prediction-output').innerText = `Prediction for ${cityName}: ${result.prediction}`;
+            
+            // Показать таблицу после получения предсказания
+            document.getElementById('results-table').style.display = 'table';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('prediction-output').innerText = `Error: ${error.message}`;
+        });
+    }
+    
+    
+    function updateTable(cityName, predictionValue) {
+        const tableBody = document.querySelector('#results-table tbody');
+    
+        // Проверяем, есть ли уже строка с этим городом
+        let existingRow = Array.from(tableBody.rows).find(row => row.cells[0].innerText === cityName);
+    
+        if (existingRow) {
+            // Если строка найдена, обновляем предсказание
+            existingRow.cells[1].innerText = predictionValue;
+        } else {
+            // Если строки нет, добавляем новую
+            const row = tableBody.insertRow();
+            const cityCell = row.insertCell(0);
+            const predictionCell = row.insertCell(1);
+    
+            cityCell.innerText = cityName;
+            cityCell.style.border = '1px solid #ccc';
+            cityCell.style.padding = '8px';
+    
+            predictionCell.innerText = predictionValue;
+            predictionCell.style.border = '1px solid #ccc';
+            predictionCell.style.padding = '8px';
+        }
+    }
+    
+    function updateChart() {
+        const labels = Object.keys(predictions);
+        const data = Object.values(predictions);
+
+        if (chart) {
+            chart.destroy(); // Уничтожаем предыдущий график перед созданием нового
+        }
+
+        const ctx = document.getElementById('chart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Violent Crimes Per Population',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
+
